@@ -29,14 +29,14 @@
 }
 
 @media (prefers-color-scheme: dark) {
+  /* 다크 모드 설정 */
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #17171c;
+    --foreground: #e4e4e5;
   }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
 }
