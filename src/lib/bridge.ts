@@ -56,8 +56,11 @@ export const initBridge = () => {
 };
 
 // Message Sending
-export const sendBridgeMessage = <T = unknown, R = unknown>(
-  type: BridgeEventType,
+export const sendBridgeMessage = <
+  T extends MessageTypes[keyof MessageTypes],
+  R = unknown,
+>(
+  type: MessageType,
   payload: T,
 ): Promise<R> => {
   if (!isReactNative) {
@@ -67,7 +70,7 @@ export const sendBridgeMessage = <T = unknown, R = unknown>(
 
   return new Promise((resolve, reject) => {
     const id = generateId();
-    const message: BridgePayload<T> = { id, type, payload };
+    const message = { id, type, payload };
 
     callbackManager.set(id, (response: BridgeResponse) => {
       if (response.success) {
@@ -83,36 +86,31 @@ export const sendBridgeMessage = <T = unknown, R = unknown>(
 
 // Bridge API
 export const bridge = {
-  alert: (title: string, message: string) =>
-    sendBridgeMessage("ALERT", { title, message }),
-
-  confirm: (title: string, message: string) =>
-    sendBridgeMessage<{ title: string; message: string }, boolean>("CONFIRM", {
+  alert: ({ title, message, buttons }: AlertPayload) =>
+    sendBridgeMessage<AlertPayload, AlertResponse>("ALERT", {
       title,
       message,
+      buttons,
     }),
-
-  toast: (message: string, duration?: number) =>
-    sendBridgeMessage("TOAST", { message, duration }),
 
   navigate: (screen: string, params?: Record<string, unknown>) =>
     sendBridgeMessage("NAVIGATE", { screen, params }),
 
   getUserInfo: () =>
-    sendBridgeMessage<void, UserInfo>("GET_USER_INFO", undefined),
+    sendBridgeMessage<undefined, UserInfoResponse>("GET_USER_INFO", undefined),
 
-  setUserInfo: (userInfo: UserInfo) =>
+  setUserInfo: (userInfo: UserInfoResponse) =>
     sendBridgeMessage("SET_USER_INFO", userInfo),
 
   bluetooth: {
     checkStatus: () =>
-      sendBridgeMessage<void, BluetoothStatus>(
+      sendBridgeMessage<undefined, BluetoothStatus>(
         "BLUETOOTH_STATUS_CHECK",
         undefined,
       ),
 
     requestEnable: () =>
-      sendBridgeMessage<void, BluetoothStatusPayload>(
+      sendBridgeMessage<undefined, BluetoothStatusPayload>(
         "BLUETOOTH_ENABLE_REQUEST",
         undefined,
       ),
@@ -140,4 +138,32 @@ export const bridge = {
       };
     },
   },
-} as const;
+
+  camera: {
+    showModal: (options: CameraPictureOptions) =>
+      sendBridgeMessage<CameraPictureOptions, CameraResult>(
+        "CAMERA_SHOW",
+        options,
+      ),
+
+    hideCamera: () =>
+      sendBridgeMessage<undefined, undefined>("CAMERA_HIDE", undefined),
+
+    requestPermission: () =>
+      sendBridgeMessage<undefined, CameraPermissionResponse>(
+        "CAMERA_REQUEST_PERMISSION",
+        undefined,
+      ),
+
+    stopRecording: () =>
+      sendBridgeMessage<undefined, undefined>(
+        "CAMERA_STOP_RECORDING",
+        undefined,
+      ),
+
+    // saveToLibrary: (uri: string) =>
+    //   sendBridgeMessage<undefined, undefined>("CAMERA_SAVE_TO_LIBRARY", {
+    //     uri,
+    //   }),
+  },
+};
