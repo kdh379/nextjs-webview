@@ -37,18 +37,51 @@ class CallbackManager {
 
 const callbackManager = new CallbackManager();
 
+// 브릿지 초기화 상태를 추적하기 위한 변수
+let isBridgeInitialized = false;
+// 메시지 이벤트 핸들러 참조를 저장하는 변수
+let messageHandler: ((event: MessageEvent) => void) | null = null;
+
 // Bridge Initialization
 export const initBridge = () => {
   if (typeof window === "undefined") return;
 
-  window.addEventListener("message", (event) => {
+  // 이미 초기화되었으면 중복 초기화하지 않음
+  if (isBridgeInitialized && messageHandler) {
+    console.log("Bridge already initialized, skipping...");
+    return messageHandler;
+  }
+
+  // 메시지 이벤트 핸들러 생성
+  messageHandler = (event: MessageEvent) => {
     try {
+      console.log("event", event);
       const response = JSON.parse(event.data) as BridgeResponse;
       callbackManager.execute(response.id, response);
     } catch (error) {
       console.error(ERRORS.BRIDGE_PARSE_ERROR, error);
     }
-  });
+  };
+
+  // 이벤트 리스너 등록
+  window.addEventListener("message", messageHandler);
+
+  // 초기화 상태 업데이트
+  isBridgeInitialized = true;
+  console.log("Bridge initialized successfully");
+
+  // 핸들러 참조 반환
+  return messageHandler;
+};
+
+// 브릿지 정리 함수 제공
+export const cleanupBridge = () => {
+  if (typeof window === "undefined" || !messageHandler) return;
+
+  window.removeEventListener("message", messageHandler);
+  messageHandler = null;
+  isBridgeInitialized = false;
+  console.log("Bridge cleanup completed");
 };
 
 // Message Sending

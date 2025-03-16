@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useBridge } from "@/hooks/useBridge";
 import { bridge } from "@/lib/bridge";
@@ -13,19 +13,19 @@ export const BridgeExample = () => {
   // const [bluetoothStatus, setBluetoothStatus] =
   // useState<BluetoothStatus>("off");
   const [ocrResult, setOcrResult] = useState<IDCardOCRResult | null>(null);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, _setUserInfo] = useState<UserInfo | null>(null);
 
-  useEffect(() => {
-    // 블루투스 상태 변경 감지
-    // const cleanup = bridgeListener("BLUETOOTH_STATUS", ({ data }) => {
-    //   console.log("블루투스 상태 변경:", data);
-    // });
+  // useEffect(() => {
+  //   // 블루투스 상태 변경 감지
+  //   // const cleanup = bridgeListener("BLUETOOTH_STATUS", ({ data }) => {
+  //   //   console.log("블루투스 상태 변경:", data);
+  //   // });
 
-    // 사용자 정보 가져오기
-    bridge("GET_USER_INFO", undefined).then(setUserInfo).catch(console.error);
+  //   // 사용자 정보 가져오기
+  //   bridge("GET_USER_INFO", undefined).then(setUserInfo).catch(console.error);
 
-    // return () => cleanup();
-  }, []);
+  //   // return () => cleanup();
+  // }, []);
 
   const handleAlertClick = async () => {
     try {
@@ -84,8 +84,9 @@ export const BridgeExample = () => {
       includeImageBase64: true,
       quality: 1,
     });
+    const { imageBase64, ...ocrResult } = result;
     setOcrResult(result);
-    setResText(JSON.stringify(result));
+    setResText(JSON.stringify(ocrResult));
   };
 
   // const handleBluetoothEnableClick = async () => {
