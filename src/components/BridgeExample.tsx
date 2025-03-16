@@ -15,22 +15,20 @@ export const BridgeExample = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
-    //   // 블루투스 상태 변경 감지
-    //   bridge.bluetooth.onStatusChange(({ data }) => {
-    //     console.log("블루투스 상태 변경:", data);
-    //     setBluetoothStatus(data?.status ?? "off");
-    //   });
-
-    //   // 초기 블루투스 상태 확인
-    //   bridge.bluetooth.checkStatus().catch(console.error);
+    // 블루투스 상태 변경 감지
+    // const cleanup = bridgeListener("BLUETOOTH_STATUS", ({ data }) => {
+    //   console.log("블루투스 상태 변경:", data);
+    // });
 
     // 사용자 정보 가져오기
-    bridge.getUserInfo().then(setUserInfo).catch(console.error);
+    bridge("GET_USER_INFO", undefined).then(setUserInfo).catch(console.error);
+
+    // return () => cleanup();
   }, []);
 
   const handleAlertClick = async () => {
     try {
-      const result = await bridge.alert({
+      const result = await bridge("ALERT", {
         title: "Alert Title",
         message: "Alert Message....",
         buttons: [
@@ -55,16 +53,25 @@ export const BridgeExample = () => {
 
   const handleCameraClick = async () => {
     try {
-      const permissionResult = await bridge.camera.requestPermission();
-      console.log("카메라 권한 요청 결과:", permissionResult);
-      const showCameraResult = await bridge.camera.showModal({
-        quality: "2160p",
-        flash: "off",
-        facing: "back",
-      });
-      console.log("카메라 표시 결과:", showCameraResult);
-      setResText("카메라 표시 결과:" + JSON.stringify(showCameraResult));
-      setCameraResult(showCameraResult);
+      // const permissionResult = await bridge.camera.requestPermission();
+      const permissionResult = await bridge(
+        "CAMERA_REQUEST_PERMISSION",
+        undefined,
+      );
+
+      if (permissionResult.camera.granted) {
+        const showCameraResult = await bridge("CAMERA_SHOW", {
+          quality: "2160p",
+          flash: "off",
+          facing: "back",
+        });
+        console.log("카메라 표시 결과:", showCameraResult);
+        // setResText("카메라 표시 결과:" + JSON.stringify(showCameraResult));
+        setCameraResult(showCameraResult);
+      } else {
+        console.log("카메라 권한 거부");
+        setResText(JSON.stringify(permissionResult));
+      }
     } catch (error) {
       console.error("카메라 촬영 실패:", error);
     }
