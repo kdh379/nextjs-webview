@@ -4,8 +4,15 @@
 
 type OCRDocumentType = "ID_CARD" | "DRIVER_LICENSE";
 
-// OCR 요청 옵션
+// OCR 요청 타입
 interface OCRPayload {
+  documentType?: OCRDocumentType;
+  includeImageBase64?: boolean;
+  quality?: number;
+}
+
+// OCR API 요청 타입 ( OpenAI 에 요청할 데이터 )
+interface OCRRequest {
   imageUri: string;
   base64?: string;
   documentType?: OCRDocumentType;
@@ -21,8 +28,7 @@ interface IDCardOCRResult {
   issuer?: string;
   isValid?: boolean;
   confidence?: number;
-  rawText?: string;
 }
 
 // OCR 결과 타입
-type OCRResponse = IDCardOCRResult | string;
+type OCRResponse = IDCardOCRResult;

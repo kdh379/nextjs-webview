@@ -12,6 +12,7 @@ export const BridgeExample = () => {
   useBridge();
   // const [bluetoothStatus, setBluetoothStatus] =
   // useState<BluetoothStatus>("off");
+  const [ocrResult, setOcrResult] = useState<IDCardOCRResult | null>(null);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
@@ -77,6 +78,16 @@ export const BridgeExample = () => {
     }
   };
 
+  const handleOCRClick = async () => {
+    const result = await bridge("OCR_SCAN_ID_CARD", {
+      documentType: "ID_CARD",
+      includeImageBase64: true,
+      quality: 1,
+    });
+    setOcrResult(result);
+    setResText(JSON.stringify(result));
+  };
+
   // const handleBluetoothEnableClick = async () => {
   //   try {
   //     const result = await bridge.bluetooth.requestEnable();
@@ -126,11 +137,38 @@ export const BridgeExample = () => {
           >
             카메라 테스트
           </button>
+          <button
+            onClick={handleOCRClick}
+            className="bg-purple-500 text-white px-4 py-2 rounded"
+          >
+            OCR 테스트
+          </button>
         </div>
 
         <div className="mt-4">
           <p>응답 결과: {resText}</p>
         </div>
+        {ocrResult && (
+          <div className="mt-4">
+            <h2 className="text-xl font-semibold mb-2">OCR 결과</h2>
+            <dl>
+              <dt>이름</dt>
+              <dd>{ocrResult.name}</dd>
+            </dl>
+            <dl>
+              <dt>주민등록번호</dt>
+              <dd>{ocrResult.registrationNumber}</dd>
+            </dl>
+            <dl>
+              <dt>주소</dt>
+              <dd>{ocrResult.address}</dd>
+            </dl>
+            <dl>
+              <dt>발급일</dt>
+              <dd>{ocrResult.issueDate}</dd>
+            </dl>
+          </div>
+        )}
         {cameraResult && (
           <div className="mt-4">
             <h2 className="text-xl font-semibold mb-2">카메라 촬영 결과</h2>
